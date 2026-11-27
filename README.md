@@ -27,3 +27,9 @@ Le SDK Pi ne fonctionne que dans Pi Browser. Dans Chrome, le catalogue s'affiche
 ## Avancement
 
 Étapes 1 et 3 faites (architecture, schéma de base). Prochaines : API catalogue/panier, pages, admin, paiements.
+
+## Base de données (Supabase)
+
+Les tables de `0001_init` ont déjà été créées dans Supabase, avec RLS activée et sans politique : seul le serveur y accède.
+Avant le premier déploiement, une seule fois, il faudra marquer cette migration comme appliquée pour Prisma :
+`npx prisma migrate resolve --applied 0001_init` (avec `DATABASE_URL` défini).
