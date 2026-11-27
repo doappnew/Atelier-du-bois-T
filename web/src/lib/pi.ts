@@ -18,7 +18,8 @@ declare global {
   }
 }
 
-export const API_URL = import.meta.env.VITE_API_URL as string;
+// Vide en production : le site et l'API partagent la même adresse.
+export const API_URL = (import.meta.env.VITE_API_URL as string | undefined) ?? "";
 const SANDBOX = import.meta.env.VITE_PI_SANDBOX === "true";
 
 export const isPiBrowser = () => typeof window !== "undefined" && !!window.Pi;

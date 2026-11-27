@@ -2,6 +2,8 @@ import cors from "cors";
 import express, { type NextFunction, type Request, type Response } from "express";
 import rateLimit from "express-rate-limit";
 import helmet from "helmet";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { z } from "zod";
 import { requireAdmin, signSession } from "./auth.js";
 import { config } from "./config.js";
@@ -10,7 +12,22 @@ import { PiApiError, verifyAccessToken } from "./pi.js";
 
 const app = express();
 app.set("trust proxy", 1);
-app.use(helmet());
+// La politique de sécurité autorise le SDK Pi et l'affichage dans Pi Browser.
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      useDefaults: true,
+      directives: {
+        "script-src": ["'self'", "https://sdk.minepi.com"],
+        "img-src": ["'self'", "data:", "https:"],
+        "connect-src": ["'self'", "https://api.minepi.com"],
+        "frame-src": ["'self'", "https://*.minepi.com", "https://*.pinet.com"],
+        "frame-ancestors": ["'self'", "https://*.minepi.com", "https://*.pinet.com"],
+      },
+    },
+    frameguard: false,
+  }),
+);
 app.use(cors({ origin: config.CLIENT_ORIGIN }));
 app.use(express.json({ limit: "100kb" }));
 app.use("/api", rateLimit({ windowMs: 60_000, limit: 120 }));
@@ -61,6 +78,11 @@ app.get("/api/products", async (req, res, next) => {
 });
 
 app.get("/api/admin/ping", requireAdmin, (_req, res) => res.json({ admin: true }));
+
+// Le serveur sert aussi le site (web/dist) : une seule adresse pour tout.
+const webDist = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../web/dist");
+app.use(express.static(webDist));
+app.get(/^\/(?!api\/).*/, (_req, res) => res.sendFile(path.join(webDist, "index.html")));
 
 // Gestion centralisée des erreurs
 app.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {
