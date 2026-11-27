@@ -1,0 +1,12 @@
+{
+  "name": "atelier-du-bois",
+  "private": true,
+  "workspaces": ["server", "web"],
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "dev:server": "npm run dev -w server",
+    "dev:web": "npm run dev -w web",
+    "build": "npm run build -w server && npm run build -w web",
+    "start": "npm run start -w server"
+  }
+}
